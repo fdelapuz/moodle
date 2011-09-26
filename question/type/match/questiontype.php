@@ -338,14 +338,16 @@ class question_match_qtype extends default_questiontype {
     function get_correct_responses_text($state) {
         $responses = array();
         foreach ($state->options->subquestions as $sub) {
-            $responses[] = $sub->questiontext.' - '.$sub->answertext;
+            foreach ($sub->options->answers as $ans) {
+                $responses[] .= strip_tags(format_string($sub->questiontext, false)).' - '.strip_tags(format_string($ans->answer, false));
+            }
         }
         return empty($responses) ? null : $responses;
     }
 
     function print_question_formulation_and_controls(&$question, &$state, $cmoptions, $options) {
         global $CFG;
-        $subquestions   = $state->options->subquestions;
+        $subquestions   = $state->options->subquestions; //TODO
         $correctanswers = $this->get_correct_responses($question, $state);
         $nameprefix     = $question->name_prefix;
         $answers        = array(); // Answer choices formatted ready for output.
@@ -383,6 +385,7 @@ class question_match_qtype extends default_questiontype {
         $image = get_question_image($question);
 
         // Print the input controls
+        
         foreach ($subquestions as $key => $subquestion) {
             if ($subquestion->questiontext !== '' && !is_null($subquestion->questiontext)) {
                 // Subquestion text:
@@ -428,6 +431,7 @@ class question_match_qtype extends default_questiontype {
                 $anss[] = $a;
             }
         }
+        
         include("$CFG->dirroot/question/type/match/display.html");
     }
 
