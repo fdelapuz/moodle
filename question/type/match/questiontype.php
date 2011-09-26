@@ -347,7 +347,7 @@ class question_match_qtype extends default_questiontype {
 
     function print_question_formulation_and_controls(&$question, &$state, $cmoptions, $options) {
         global $CFG;
-        $subquestions   = $state->options->subquestions; //TODO
+        $subquestions   = $state->options->subquestions;
         $correctanswers = $this->get_correct_responses($question, $state);
         $nameprefix     = $question->name_prefix;
         $answers        = array(); // Answer choices formatted ready for output.
@@ -385,7 +385,6 @@ class question_match_qtype extends default_questiontype {
         $image = get_question_image($question);
 
         // Print the input controls
-        
         foreach ($subquestions as $key => $subquestion) {
             if ($subquestion->questiontext !== '' && !is_null($subquestion->questiontext)) {
                 // Subquestion text:
@@ -431,7 +430,6 @@ class question_match_qtype extends default_questiontype {
                 $anss[] = $a;
             }
         }
-        
         include("$CFG->dirroot/question/type/match/display.html");
     }
 
