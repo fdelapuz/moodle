@@ -98,6 +98,9 @@ class embedded_cloze_qtype extends default_questiontype {
                         case 'shortanswer':
                                  delete_records('question_shortanswer', 'question' , $oldwrappedquestion->id );
                             break;
+                        case 'regexp':
+                             delete_records('question_regexp', 'question', $oldwrappedquestion->id);
+                            break;
                         case 'numerical':
                                  delete_records('question_numerical', 'question' , $oldwrappedquestion->id );
                             break;
@@ -302,6 +305,7 @@ class embedded_cloze_qtype extends default_questiontype {
                                 switch($wrapped->qtype){
                                     case 'numerical':
                                     case 'shortanswer':
+                                    case 'regexp':
                                         $correctanswer .= $delimiter.$ca;
                                         break ;
                                     case 'multichoice':
@@ -325,6 +329,7 @@ class embedded_cloze_qtype extends default_questiontype {
                 switch ($wrapped->qtype) {
                     case 'numerical':
                     case 'shortanswer':
+                    case 'regexp': //JR
                         $testedstate = clone($state);
                         $testedstate->responses[''] = $response;
                         foreach ($answers as $answer) {
@@ -415,6 +420,23 @@ class embedded_cloze_qtype extends default_questiontype {
 
                     echo "<input $style $readonly $popup name=\"$inputname\"";
                     echo "  type=\"text\" value=\"".s($response, true)."\" ".$styleinfo." /> ";
+                    if (!empty($feedback) && !empty($USER->screenreader)) {
+                        echo "<img src=\"$CFG->pixpath/i/feedback.gif\" alt=\"$feedback\" />";
+                    }
+                    echo $feedbackimg;
+                    break;
+                case 'regexp': //JR
+                // set length of answer input field to length of *first* encountered CORRECT answer
+                // NOTE.- this should be a "real" answer, NOT a regular expression
+                    foreach ($answers as $snanswer) {
+                        if ($snanswer->fraction == 1) {
+                            $snmaxlen = strlen($snanswer->answer);
+                            break;
+                        }
+                    }        
+                    if ($snmaxlen<6){ $snmaxlen= 6; }
+                    echo " <input $style $readonly $popup name=\"$inputname\"
+                            type=\"text\" value=\"".stripslashes(s($response))."\" size=\"$snmaxlen\" /> ";
                     if (!empty($feedback) && !empty($USER->screenreader)) {
                         echo "<img src=\"$CFG->pixpath/i/feedback.gif\" alt=\"$feedback\" />";
                     }
@@ -884,7 +906,7 @@ define("NUMERICAL_ABS_ERROR_MARGIN", 6);
 
 // Remaining ANSWER regexes
 define("ANSWER_TYPE_DEF_REGEX",
-       '(NUMERICAL|NM)|(MULTICHOICE|MC)|(MULTICHOICE_V|MCV)|(MULTICHOICE_H|MCH)|(SHORTANSWER|SA|MW)|(SHORTANSWER_C|SAC|MWC)');
+       '(NUMERICAL|NM)|(MULTICHOICE|MC)|(MULTICHOICE_V|MCV)|(MULTICHOICE_H|MCH)|(SHORTANSWER|SA|MW)|(SHORTANSWER_C|SAC|MWC)|(REGEXP)');
 define("ANSWER_START_REGEX",
        '\{([0-9]*):(' . ANSWER_TYPE_DEF_REGEX . '):');
 
@@ -903,7 +925,8 @@ define("ANSWER_REGEX_ANSWER_TYPE_MULTICHOICE_REGULAR", 5);
 define("ANSWER_REGEX_ANSWER_TYPE_MULTICHOICE_HORIZONTAL", 6);
 define("ANSWER_REGEX_ANSWER_TYPE_SHORTANSWER", 7);
 define("ANSWER_REGEX_ANSWER_TYPE_SHORTANSWER_C", 8);
-define("ANSWER_REGEX_ALTERNATIVES", 9);
+define("ANSWER_REGEX_ANSWER_TYPE_REGEXP", 9); //JR
+define("ANSWER_REGEX_ALTERNATIVES", 10);
 
 function qtype_multianswer_extract_question($text) {
     $question = new stdClass;
@@ -925,6 +948,9 @@ function qtype_multianswer_extract_question($text) {
         } else if(!empty($answerregs[ANSWER_REGEX_ANSWER_TYPE_SHORTANSWER])) {
             $wrapped->qtype = 'shortanswer';
             $wrapped->usecase = 0;
+        } else if(!empty($answerregs[ANSWER_REGEX_ANSWER_TYPE_REGEXP])) { //JR
+            $wrapped->qtype = 'regexp';
+            $wrapped->usehint = 0;
         } else if(!empty($answerregs[ANSWER_REGEX_ANSWER_TYPE_SHORTANSWER_C])) {
             $wrapped->qtype = 'shortanswer';
             $wrapped->usecase = 1;
