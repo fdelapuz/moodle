@@ -37,7 +37,7 @@ require_once($CFG->dirroot . '/question/type/multichoice/question.php');
  */
 class qtype_multianswer extends question_type {
     public function requires_qtypes() {
-        return array('shortanswer', 'numerical', 'multichoice');
+        return array('shortanswer', 'numerical', 'multichoice', 'regexp');
     }
 
     public function can_analyse_responses() {
@@ -117,6 +117,10 @@ class qtype_multianswer extends question_type {
                                 break;
                             case 'shortanswer':
                                 $DB->delete_records('question_shortanswer',
+                                        array('question' => $oldwrappedquestion->id));
+                                break;
+                            case 'regexp':
+                                $DB->delete_records('question_regexp',
                                         array('question' => $oldwrappedquestion->id));
                                 break;
                             case 'numerical':
@@ -262,7 +266,7 @@ define('NUMERICAL_ABS_ERROR_MARGIN', 6);
 // Remaining ANSWER regexes
 define('ANSWER_TYPE_DEF_REGEX',
         '(NUMERICAL|NM)|(MULTICHOICE|MC)|(MULTICHOICE_V|MCV)|(MULTICHOICE_H|MCH)|' .
-                '(SHORTANSWER|SA|MW)|(SHORTANSWER_C|SAC|MWC)');
+                '(SHORTANSWER|SA|MW)|(SHORTANSWER_C|SAC|MWC)|(REGEXP|RX)|(REGEXP_C|RXC)');
 define('ANSWER_START_REGEX',
        '\{([0-9]*):(' . ANSWER_TYPE_DEF_REGEX . '):');
 
@@ -281,7 +285,9 @@ define('ANSWER_REGEX_ANSWER_TYPE_MULTICHOICE_REGULAR', 5);
 define('ANSWER_REGEX_ANSWER_TYPE_MULTICHOICE_HORIZONTAL', 6);
 define('ANSWER_REGEX_ANSWER_TYPE_SHORTANSWER', 7);
 define('ANSWER_REGEX_ANSWER_TYPE_SHORTANSWER_C', 8);
-define('ANSWER_REGEX_ALTERNATIVES', 9);
+define('ANSWER_REGEX_ANSWER_TYPE_REGEXP', 9);
+define('ANSWER_REGEX_ANSWER_TYPE_REGEXP_C', 10);
+define('ANSWER_REGEX_ALTERNATIVES', 11);
 
 function qtype_multianswer_extract_question($text) {
     // $text is an array [text][format][itemid]
@@ -320,6 +326,14 @@ function qtype_multianswer_extract_question($text) {
         } else if (!empty($answerregs[ANSWER_REGEX_ANSWER_TYPE_SHORTANSWER_C])) {
             $wrapped->qtype = 'shortanswer';
             $wrapped->usecase = 1;
+        } else if (!empty($answerregs[ANSWER_REGEX_ANSWER_TYPE_REGEXP])) {
+            $wrapped->qtype = 'regexp';
+            $wrapped->usecase = 0;
+            $wrapped->usehint = 0;
+        } else if (!empty($answerregs[ANSWER_REGEX_ANSWER_TYPE_REGEXP_C])) {
+            $wrapped->qtype = 'regexp';
+            $wrapped->usecase = 1;
+            $wrapped->usehint = 0;
         } else if (!empty($answerregs[ANSWER_REGEX_ANSWER_TYPE_MULTICHOICE])) {
             $wrapped->qtype = 'multichoice';
             $wrapped->single = 1;

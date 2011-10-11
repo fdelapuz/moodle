@@ -26,6 +26,7 @@
 
 
 require_once($CFG->dirroot . '/question/type/shortanswer/renderer.php');
+require_once($CFG->dirroot . '/question/type/regexp/renderer.php');
 
 
 /**
@@ -69,7 +70,7 @@ class qtype_multianswer_renderer extends qtype_renderer {
             question_display_options $options, $index, question_graded_automatically $subq) {
 
         $subtype = $subq->qtype->name();
-        if ($subtype == 'numerical' || $subtype == 'shortanswer') {
+        if ($subtype == 'numerical' || $subtype == 'shortanswer' || $subtype == 'regexp') {
             $subrenderer = 'textfield';
         } else if ($subtype == 'multichoice') {
             if ($subq->layout == qtype_multichoice_base::LAYOUT_DROPDOWN) {
@@ -174,7 +175,7 @@ class qtype_multianswer_textfield_renderer extends qtype_multianswer_subq_render
         $fieldname = $fieldprefix . 'answer';
 
         $response = $qa->get_last_qt_var($fieldname);
-        if ($subq->qtype->name() == 'shortanswer') {
+        if ($subq->qtype->name() == 'shortanswer' || $subq->qtype->name() == 'regexp') {
             $matchinganswer = $subq->get_matching_answer(array('answer' => $response));
         } else if ($subq->qtype->name() == 'numerical') {
             $matchinganswer = $subq->get_matching_answer($response, 1);
