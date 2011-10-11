@@ -86,6 +86,19 @@ class mod_glossary_mod_form extends moodleform_mod {
         $mform->addElement('selectyesno', 'showalphabet', get_string('showalphabet', 'glossary'));
         $mform->setDefault('showalphabet', 1);
         $mform->addHelpButton('showalphabet', 'showalphabet', 'glossary');
+        $mform->getElementValue('entbypage');
+/* ------------------------------------------------------------------------------------------------------------------------------------- */ 
+		// DEV JR
+        $displayalphabetsgrp=array();
+        $languages = get_string_manager()->get_list_of_translations(); // new to 2.1	
+		foreach ($languages as $language) {
+        	if( preg_match( '!\(([^\)]+)\)!', $language, $match ) ) {
+    			$shortlanguagename = $match[1];
+        	}
+        	$displayalphabetsgrp[] = &MoodleQuickForm::createElement('checkbox', $shortlanguagename, '', $language.' ');
+        }
+		$mform->addGroup($displayalphabetsgrp, 'specialalphabetslist', get_string('showalphabets', 'glossary'), '', true);
+        $mform->addHelpButton('specialalphabetslist', 'showalphabets', 'glossary');
 
         $mform->addElement('selectyesno', 'showall', get_string('showall', 'glossary'));
         $mform->setDefault('showall', 1);
@@ -165,6 +178,22 @@ class mod_glossary_mod_form extends moodleform_mod {
         if (empty($default_values['completionentries'])) {
             $default_values['completionentries']=1;
         }
+        // DEV JR retrieve actual values of specialalphabets and inject them into each language available in course 
+		$specialalphabetslist = array();
+        if (isset($default_values['specialalphabets'])) {    
+        	$specialalphabetslist = explode(",", $default_values['specialalphabets']);
+	    }
+        $languages = get_string_manager()->get_list_of_translations(); // new to 2.1	
+        foreach ($languages as $language) {
+        	if( preg_match( '!\(([^\)]+)\)!', $language, $match ) ) {
+    			$shortlanguagename = $match[1];
+        	}
+        	if (in_array($shortlanguagename, $specialalphabetslist)) {
+        		$default_values['specialalphabetslist['.$shortlanguagename.']'] = 1;        		
+        	} else {
+        		$default_values['specialalphabetslist['.$shortlanguagename.']'] = 0;
+        	}
+        }  
     }
 
     function add_completion_rules() {

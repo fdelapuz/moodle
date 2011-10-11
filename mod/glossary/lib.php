@@ -73,6 +73,8 @@ function glossary_add_instance($glossary) {
         print_error('unknowformat', '', '', $glossary->displayformat);
     }
 
+    glossary_special_alphabets($glossary);
+    
     $returnid = $DB->insert_record("glossary", $glossary);
     $glossary->id = $returnid;
     glossary_grade_item_update($glossary);
@@ -80,6 +82,15 @@ function glossary_add_instance($glossary) {
     return $returnid;
 }
 
+function glossary_special_alphabets($glossary) {
+    global $CFG, $DB;
+    if (isset($glossary->specialalphabetslist)) {
+        $specialalphabets = implode (',', array_keys($glossary->specialalphabetslist));        
+    } else {
+        $specialalphabets = '';
+    }
+    $glossary->specialalphabets = $specialalphabets;;
+}
 /**
  * Given an object containing all the necessary data,
  * (defined by the form in mod_form.php) this function
@@ -115,7 +126,7 @@ function glossary_update_instance($glossary) {
     if (!in_array($glossary->displayformat, $formats)) {
         print_error('unknowformat', '', '', $glossary->displayformat);
     }
-
+    glossary_special_alphabets($glossary);
     $DB->update_record("glossary", $glossary);
     if ($glossary->defaultapproval) {
         $DB->execute("UPDATE {glossary_entries} SET approved = 1 where approved <> 1 and glossaryid = ?", array($glossary->id));
@@ -1566,8 +1577,8 @@ function glossary_print_approval_menu($cm, $glossary,$mode, $hook, $sortkey = ''
     glossary_print_special_links($cm, $glossary, $mode, $hook);
 
     glossary_print_alphabet_links($cm, $glossary, $mode, $hook,$sortkey, $sortorder);
-
-    glossary_print_all_links($cm, $glossary, $mode, $hook);
+    /// for glossary multi alphabets, moved this function to glossary_print_alphabet_links
+    //glossary_print_all_links($cm, $glossary, $mode, $hook);
 
     glossary_print_sorting_links($cm, $mode, 'CREATION', 'asc');
 }
@@ -1609,7 +1620,8 @@ function glossary_print_alphabet_menu($cm, $glossary, $mode, $hook, $sortkey='',
 
         glossary_print_alphabet_links($cm, $glossary, $mode, $hook, $sortkey, $sortorder);
 
-        glossary_print_all_links($cm, $glossary, $mode, $hook);
+        //glossary_print_all_links($cm, $glossary, $mode, $hook);
+        /// for glossary multi alphabets, moved this function to glossary_print_alphabet_links
     } else {
         glossary_print_sorting_links($cm, $mode, $sortkey,$sortorder);
     }
@@ -1762,6 +1774,8 @@ global $CFG;
  */
 function glossary_print_alphabet_links($cm, $glossary, $mode, $hook, $sortkey, $sortorder) {
 global $CFG;
+//echo "lang = ".current_language()."<br>";
+//echo "cfglang = $CFG->lang; courselang = $COURSE->lang; userlang = $USER->lang; sessionlang = $SESSION->lang<br>";
      if ( $glossary->showalphabet) {
           $alphabet = explode(",", get_string('alphabet', 'langconfig'));
           for ($i = 0; $i < count($alphabet); $i++) {
@@ -1772,7 +1786,46 @@ global $CFG;
               }
               echo ' | ';
           }
-     }
+    }
+    // for glossary multi alphabets   
+    // moved here from glossary_print_alphabet_menu  
+    glossary_print_all_links($cm, $glossary, $mode, $hook); 
+    // retrieved from database: table glossary; field specialalphabets; stored as csv list
+    $alphabets = $glossary->specialalphabets;
+    $currentlanguage = current_language();
+    if ($alphabets != '') {
+        $langs = explode(",", $alphabets);
+        foreach ($langs as $lang) {
+        	// do not use alphabet of current language being used (it will be displayed automatically)
+            if ($lang != $currentlanguage) {
+                $alphabet = get_string_manager()->get_string('alphabet', 'langconfig', '', $lang);
+                if ($alphabet) {
+                    echo "<br />";        
+                    $alphabet_letters = explode(",", $alphabet);
+                    for ($i = 0; $i < count($alphabet_letters); $i++) {
+                        if ( $hook == $alphabet_letters[$i] and $hook) {
+                            echo "<b>$alphabet_letters[$i]</b>";
+                        } else {
+                            echo "<a href=\"$CFG->wwwroot/mod/glossary/view.php?id=$cm->id&amp;mode=$mode&amp;hook=".
+                                urlencode($alphabet_letters[$i]).
+                                "&amp;sortkey=$sortkey&amp;sortorder=$sortorder\">$alphabet_letters[$i]</a>";
+                        }                    
+                        echo ' | ';
+                    }
+                    $strallentries = get_string_manager()->get_string('allentries', 'glossary', '', $lang);
+                    $strexplainall = get_string_manager()->get_string('explainall', 'glossary', '', $lang);
+                    if ( $glossary->showall) {
+                        if ( $hook == 'ALL' ) {
+                            echo "<b>$strallentries</b>";
+                        } else {
+                            echo "<a title=\"$strexplainall\" href=\"$CFG->wwwroot/mod/glossary/view.php?
+                                id=$cm->id&amp;mode=$mode&amp;hook=ALL\">$strallentries</a>";
+                        }
+                    }   
+                }
+            }
+        }
+    }
 }
 
 /**
