@@ -321,7 +321,11 @@ abstract class question_edit_form extends moodleform {
             $countanswers = 0;
         }
         if ($this->question->formoptions->repeatelements) {
-            $repeatsatstart = max($minoptions, $countanswers + $addoptions);
+            if ($countanswers) {
+                $repeatsatstart = $countanswers;
+            } else {
+                $repeatsatstart = $minoptions;
+            }
         } else {
             $repeatsatstart = $countanswers;
         }
