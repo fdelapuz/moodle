@@ -25,7 +25,7 @@
  */
 
 /**
- * slightly modified to accomodate REGEXP question type
+ * slightly modified to accommodate REGEXP question type
  * by Joseph Rézeau
  * for REGEXP version 2012010100
  * 

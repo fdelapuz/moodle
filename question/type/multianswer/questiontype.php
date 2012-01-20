@@ -37,7 +37,7 @@ require_once($CFG->dirroot . '/question/type/multichoice/question.php');
  */
 
 /**
- * slightly modified to accomodate REGEXP question type
+ * slightly modified to accommodate REGEXP question type
  * by Joseph Rézeau
  * for REGEXP version 2012010100
  * 
