@@ -35,6 +35,14 @@ require_once($CFG->dirroot . '/question/type/multichoice/question.php');
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+/**
+ * slightly modified to accomodate REGEXP question type
+ * by Joseph Rézeau
+ * for REGEXP version 2012010100
+ * 
+ */
+
 class qtype_multianswer extends question_type {
     public function requires_qtypes() {
         return array('shortanswer', 'numerical', 'multichoice', 'regexp');
@@ -330,10 +338,12 @@ function qtype_multianswer_extract_question($text) {
             $wrapped->qtype = 'regexp';
             $wrapped->usecase = 0;
             $wrapped->usehint = 0;
+            $wrapped->studentshowalternate = 0;
         } else if (!empty($answerregs[ANSWER_REGEX_ANSWER_TYPE_REGEXP_C])) {
             $wrapped->qtype = 'regexp';
             $wrapped->usecase = 1;
             $wrapped->usehint = 0;
+            $wrapped->studentshowalternate = 0;
         } else if (!empty($answerregs[ANSWER_REGEX_ANSWER_TYPE_MULTICHOICE])) {
             $wrapped->qtype = 'multichoice';
             $wrapped->single = 1;

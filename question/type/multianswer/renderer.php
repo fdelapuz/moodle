@@ -24,6 +24,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * slightly modified to accomodate REGEXP question type
+ * by Joseph Rézeau
+ * for REGEXP version 2012010100
+ * 
+ */
 
 require_once($CFG->dirroot . '/question/type/shortanswer/renderer.php');
 require_once($CFG->dirroot . '/question/type/regexp/renderer.php');
